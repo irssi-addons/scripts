@@ -62,10 +62,10 @@ sub make_colors {
             $newstr .= $char;
             next;
         }
-        while (($color = int(rand(scalar(@colors)))) == $last) {};
-        $last = $color;
+
+        $color++;
         $newstr .= "\003";
-        $newstr .= sprintf("%02d", $colors[$color]);
+        $newstr .= sprintf("%02d", $colors[$color % @colors]);
         $newstr .= (($char eq ",") ? ",," : $char);
     }
 
