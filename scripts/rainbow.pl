@@ -51,96 +51,96 @@ my @colors = ('0', '4', '8', '9', '11', '12', '13');
 # str make_colors($string)
 # returns random-coloured string
 sub make_colors {
-	my ($string) = @_;
-	my $newstr = "";
-	my $last = 255;
-	my $color = 0;
+    my ($string) = @_;
+    my $newstr = "";
+    my $last = 255;
+    my $color = 0;
 
-	for (my $c = 0; $c < length($string); $c++) {
-		my $char = substr($string, $c, 1);
-		if ($char eq ' ') {
-			$newstr .= $char;
-			next;
-		}
-		while (($color = int(rand(scalar(@colors)))) == $last) {};
-		$last = $color;
-		$newstr .= "\003";
-		$newstr .= sprintf("%02d", $colors[$color]);
-		$newstr .= (($char eq ",") ? ",," : $char);
-	}
+    for (my $c = 0; $c < length($string); $c++) {
+        my $char = substr($string, $c, 1);
+        if ($char eq ' ') {
+            $newstr .= $char;
+            next;
+        }
+        while (($color = int(rand(scalar(@colors)))) == $last) {};
+        $last = $color;
+        $newstr .= "\003";
+        $newstr .= sprintf("%02d", $colors[$color]);
+        $newstr .= (($char eq ",") ? ",," : $char);
+    }
 
-	return $newstr . "\003"; # One last ^C to return to normal text color.
+    return $newstr . "\003"; # One last ^C to return to normal text color.
 }
 
 # void rsay($text, $server, $destination)
 # handles /rsay
 sub rsay {
-	my ($text, $server, $dest) = @_;
+    my ($text, $server, $dest) = @_;
 
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
+    if (!$server || !$server->{connected}) {
+        Irssi::print("Not connected to server");
+        return;
+    }
 
-	return unless $dest;
+    return unless $dest;
 
-	if ($dest->{type} eq "CHANNEL" || $dest->{type} eq "QUERY") {
-		$dest->command("/msg " . $dest->{name} . " " . make_colors($text));
-	}
+    if ($dest->{type} eq "CHANNEL" || $dest->{type} eq "QUERY") {
+        $dest->command("/msg " . $dest->{name} . " " . make_colors($text));
+    }
 }
 
 # void rme($text, $server, $destination)
 # handles /rme
 sub rme {
-	my ($text, $server, $dest) = @_;
+    my ($text, $server, $dest) = @_;
 
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
+    if (!$server || !$server->{connected}) {
+        Irssi::print("Not connected to server");
+        return;
+    }
 
-	if ($dest && ($dest->{type} eq "CHANNEL" || $dest->{type} eq "QUERY")) {
-		$dest->command("/me " . make_colors($text));
-	}
+    if ($dest && ($dest->{type} eq "CHANNEL" || $dest->{type} eq "QUERY")) {
+        $dest->command("/me " . make_colors($text));
+    }
 }
 
 # void rtopic($text, $server, $destination)
 # handles /rtopic
 sub rtopic {
-	my ($text, $server, $dest) = @_;
+    my ($text, $server, $dest) = @_;
 
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
+    if (!$server || !$server->{connected}) {
+        Irssi::print("Not connected to server");
+        return;
+    }
 
-	if ($dest && $dest->{type} eq "CHANNEL") {
-		$dest->command("/topic " . make_colors($text));
-	}
+    if ($dest && $dest->{type} eq "CHANNEL") {
+        $dest->command("/topic " . make_colors($text));
+    }
 }
 
 # void rkick($text, $server, $destination)
 # handles /rkick
 sub rkick {
-	my ($text, $server, $dest) = @_;
+    my ($text, $server, $dest) = @_;
 
-	if (!$server || !$server->{connected}) {
-		Irssi::print("Not connected to server");
-		return;
-	}
+    if (!$server || !$server->{connected}) {
+        Irssi::print("Not connected to server");
+        return;
+    }
 
-	if ($dest && $dest->{type} eq "CHANNEL") {
-		my ($nick, $reason) = split(/ +/, $text, 2);
-		return unless $nick;
-		$reason = "Irssi power!" if ($reason =~ /^[\ ]*$/);
-		$dest->command("/kick " . $nick . " " . make_colors($reason));
-	}
+    if ($dest && $dest->{type} eq "CHANNEL") {
+        my ($nick, $reason) = split(/ +/, $text, 2);
+        return unless $nick;
+        $reason = "Irssi power!" if ($reason =~ /^[\ ]*$/);
+        $dest->command("/kick " . $nick . " " . make_colors($reason));
+    }
 }
 
 # Bind tab completion: typing rainbow:<whatevertext> -> colorize <whatevertext>
 signal_add_last 'complete word' => sub {
     my ($complist, $window, $word, $linestart, $want_space) = @_;
-    
+
     if($word =~ /^rainbow:(.*)$/) {
       my($text) = $1;
       push @$complist, make_colors($text);
