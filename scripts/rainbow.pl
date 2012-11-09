@@ -46,7 +46,7 @@ use Irssi::Irc;
 # 11 == light cyan
 # 12 == light blue
 # 13 == light magenta
-my @colors = ('0', '4', '8', '9', '11', '12', '13');
+my @colors = ('4', '8', '9', '11', '12', '13');
 
 # str make_colors($string)
 # returns random-coloured string
@@ -57,28 +57,46 @@ sub make_colors {
     my $color = 0;
 
     unless (defined $stretch) {
-      $stretch = Irssi::settings_get_bool('rainbow_stretch');
+      $stretch = Irssi::settings_get_int('rainbow_stretch');
     }
 
     my $step;
-    if ($stretch) {
-      $step = int(length($string) / @colors);
-      $step = 1 if $step < 1;
+    if ($stretch > 0) {
+      $step = length($string) / (@colors-1); # int(this line)
+#      $step = 1 if $step < 1;
+      $step = $stretch if $step > $stretch;
     } else {
       $step = 1;
     }
-
-    for (my $c = 0; $c < length($string); $c += $step) {
-        my $section = substr($string, $c, $step);
+    my $err = 0;
+    for (my $c = 0; $c < length($string); $c += 1) { # += $step
+#        my $section = substr($string, $c, $step);
+        my $curcol = int($c/$step+$err+0.25+0.5*rand());
+        $err = $err + 0.5*($c/$step - $curcol);
+        my $nexterr = $err;
+	my $steplen = 1;
+        for (my $d = 0; $d < $step; $d += 1) {
+          my $nextcol = int(($c+$d)/$step+$nexterr+0.25+0.5*rand());
+          $nexterr = $nexterr + 0.5*(($c+$d)/$step-$nextcol);
+          if ($nextcol == $curcol) {
+            $steplen += 1;
+            $err = $nexterr;
+          }
+          else {
+            last;
+	  }
+        }
+	my $section = substr($string, $c, $steplen);
+        $c += $steplen - 1; # advance in the string.
         if ($section eq ' ') {
             $newstr .= $section;
             next;
         }
 
-        $color++;
         $newstr .= "\003";
-        $newstr .= sprintf("%02d", $colors[$color % @colors]);
+        $newstr .= sprintf("%d", $colors[$curcol % @colors]); # $color % @colors
         $newstr .= $section;
+        $color++;
     }
 
     return $newstr . "\003"; # One last ^C to return to normal text color.
@@ -159,7 +177,7 @@ signal_add_last 'complete word' => sub {
     }
 };
 
-Irssi::settings_add_bool('rainbow', 'rainbow_stretch', 1);
+Irssi::settings_add_int('rainbow', 'rainbow_stretch', 20);
 
 Irssi::command_bind("rsay", "rsay");
 Irssi::command_bind("rtopic", "rtopic");
@@ -174,3 +192,4 @@ Irssi::command_bind("rkick", "rkick");
 # 02.02.2002: make_colors() doesn't assign any color to spaces (v1.3)
 # 23.02.2002: /rkick added
 # 26.04.2012: Tab completion binding (v1.4-benley1)
+# 25.09.2012: Change stretching techniques
