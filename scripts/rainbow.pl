@@ -42,11 +42,14 @@ use Irssi::Irc;
 #  0 == white
 #  4 == light red
 #  8 == yellow
+#  3 == green
 #  9 == light green
 # 11 == light cyan
+# 10 == cyan
 # 12 == light blue
+#  6 == purple
 # 13 == light magenta
-my @colors = ('4', '8', '9', '11', '12', '13');
+my @colors = ('4', '8', '9', '10', '12', '6', '13');
 
 # str make_colors($string)
 # returns random-coloured string
@@ -62,7 +65,7 @@ sub make_colors {
 
     my $step;
     if ($stretch > 0) {
-      $step = length($string) / (@colors-1); # int(this line)
+      $step = length($string) / (@colors-0.75); # int(this line)
 #      $step = 1 if $step < 1;
       $step = $stretch if $step > $stretch;
     } else {
@@ -71,13 +74,13 @@ sub make_colors {
     my $err = 0;
     for (my $c = 0; $c < length($string); $c += 1) { # += $step
 #        my $section = substr($string, $c, $step);
-        my $curcol = int($c/$step+$err+0.25+0.5*rand());
-        $err = $err + 0.5*($c/$step - $curcol);
+        my $curcol = int($c/$step+$err+0.4+0.2*rand());
+        $err = $err + ($c/$step - $curcol);
         my $nexterr = $err;
 	my $steplen = 1;
-        for (my $d = 0; $d < $step; $d += 1) {
-          my $nextcol = int(($c+$d)/$step+$nexterr+0.25+0.5*rand());
-          $nexterr = $nexterr + 0.5*(($c+$d)/$step-$nextcol);
+        for (my $d = 1; $d < $step; $d += 1) {
+          my $nextcol = int(($c+$d)/$step+$nexterr+0.4+0.2*rand());
+          $nexterr = $nexterr + (($c+$d)/$step-$nextcol);
           if ($nextcol == $curcol) {
             $steplen += 1;
             $err = $nexterr;
